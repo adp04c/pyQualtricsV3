@@ -17,7 +17,8 @@ apitoken = "INSERT HERE"
 baseurl = "https://INSERT.qualtrics.com/API/v3/"
 
 class qualtrics:
-    
+
+    # https://api.qualtrics.com/docs/response-exports
     def __init__(self,survey=""):
         self.apiToken = apitoken
         self.surveyId = survey 
@@ -31,6 +32,7 @@ class qualtrics:
         print(downloadRequestResponse.text)
         return progressId
 
+    # https://api.qualtrics.com/docs/get-response-export-progress
     def checkProgress(self):
         self.progressId = self.getProgressID()
         requestCheckProgress = 0
@@ -49,6 +51,7 @@ class qualtrics:
         payload = '{"format":"' + self.fileFormat + '","surveyId":"' + self.surveyId  +'",' + long  + 'useLabels":' + self.label+  '}'  
         return payload
 
+    # https://api.qualtrics.com/docs/get-response-export-file
     def downloadExtractZip(self,fileFormat="csv",label="true",**kwargs):
         self.fileFormat = fileFormat
         self.label = label
@@ -63,28 +66,33 @@ class qualtrics:
         else:
             print("something went wrong with download")
         
+    # https://api.qualtrics.com/docs/get-distributions
     def getListDistributions(self):
         url = self.baseUrl +"distributions?" + "surveyId=" + self.surveyId
         distributions = requests.request("GET", url, headers=self.headers)
         return distributions.json()
     
+    # https://api.qualtrics.com/docs/get-distribution
     def getDistributions(self,distributionId):
         url = self.baseUrl +"distributions/" + distributionId + "?surveyId=" + self.surveyId
         distributions = requests.request("GET", url, headers=self.headers)
         return distributions.json()
     
+    # https://api.qualtrics.com/docs/get-mailing-list
     def getContacts(self,mailingId):
         url = self.baseUrl +"mailinglists/" + mailingId + "/contacts"
         contacts = requests.request("GET", url, headers=self.headers)
         return contacts.json()
     
-    #gets the first page of the distribution contacts
+    # gets the first page of the distribution contacts
+    # https://api.qualtrics.com/docs/get-distribution-links
     def getDistributionByContact(self,distributionId):
         url = self.baseUrl +"distributions/" + distributionId + "/links?surveyId=" + self.surveyId
         distributions = requests.request("GET", url, headers=self.headers)
         return distributions.json()
     
-    #iterates over DistributionsByContact and return all in a df
+    # iterates over DistributionsByContact and return all in a df
+    # status column is currently broken
     def getAllContacts(self,distributionId):
         jsonData = self.getDistributionByContact(distributionId)
         df = json_normalize(jsonData['result']['elements'])
