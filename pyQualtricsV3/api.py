@@ -24,6 +24,16 @@ class qualtrics:
         self.surveyId = survey 
         self.baseUrl = baseurl
         self.headers = {"content-type": "application/json","x-api-token": self.apiToken,}
+        
+    # https://api.qualtrics.com/docs/get-response-export-progress
+    def buildPayload(self,**kwargs):
+        long = '"'
+        for key, value in kwargs.items():
+             short =   key +'":"' + value + '","'
+             long =  long + short
+        payload = '{"format":"' + self.fileFormat + '","surveyId":"' + self.surveyId  +'",' + long  + 'useLabels":' + self.label+  '}'  
+        return payload
+    
     def getProgressID(self):
         downloadRequestUrl = self.baseUrl + "responseexports/"
         #downloadRequestPayload = '{"format":"' + self.fileFormat + '","surveyId":"' + self.surveyId  + '","lastResponseId":"' + self.lastID  + '","useLabels":' + self.label+  '}'
@@ -31,8 +41,7 @@ class qualtrics:
         progressId = downloadRequestResponse.json()["result"]["id"]
         print(downloadRequestResponse.text)
         return progressId
-
-    # https://api.qualtrics.com/docs/get-response-export-progress
+    
     def checkProgress(self):
         self.progressId = self.getProgressID()
         requestCheckProgress = 0
@@ -42,14 +51,6 @@ class qualtrics:
           requestCheckProgress = requestCheckResponse.json()["result"]["percentComplete"]
           print("Download is " + str(requestCheckProgress) + " complete")
         return requestCheckProgress
-    
-    def buildPayload(self,**kwargs):
-        long = '"'
-        for key, value in kwargs.items():
-             short =   key +'":"' + value + '","'
-             long =  long + short
-        payload = '{"format":"' + self.fileFormat + '","surveyId":"' + self.surveyId  +'",' + long  + 'useLabels":' + self.label+  '}'  
-        return payload
 
     # https://api.qualtrics.com/docs/get-response-export-file
     def downloadExtractZip(self,fileFormat="csv",label="true",**kwargs):
